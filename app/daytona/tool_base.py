@@ -14,12 +14,22 @@ from app.utils.logger import logger
 
 # load_dotenv()
 daytona_settings = config.daytona
-daytona_config = DaytonaConfig(
-    api_key=daytona_settings.daytona_api_key,
-    server_url=daytona_settings.daytona_server_url,
-    target=daytona_settings.daytona_target,
-)
-daytona = Daytona(daytona_config)
+daytona = None
+if daytona_settings and daytona_settings.daytona_api_key:
+    daytona_config = DaytonaConfig(
+        api_key=daytona_settings.daytona_api_key,
+        server_url=daytona_settings.daytona_server_url,
+        target=daytona_settings.daytona_target,
+    )
+    daytona = Daytona(daytona_config)
+
+
+def _require_daytona() -> Daytona:
+    if daytona is None:
+        raise RuntimeError(
+            "Daytona is not configured. Set [daytona].daytona_api_key in config/config.toml to use sandbox tools."
+        )
+    return daytona
 
 
 @dataclass
@@ -66,7 +76,6 @@ class SandboxToolsBase(BaseTool):
 
     class Config:
         arbitrary_types_allowed = True  # Allow non-pydantic types like ThreadManager
-        underscore_attrs_are_private = True
 
     async def _ensure_sandbox(self) -> Sandbox:
         """Ensure we have a valid sandbox instance, retrieving it from the project if needed."""
@@ -103,7 +112,7 @@ class SandboxToolsBase(BaseTool):
             ):
                 logger.info(f"Sandbox is in {self._sandbox.state} state. Starting...")
                 try:
-                    daytona.start(self._sandbox)
+                    _require_daytona().start(self._sandbox)
                     # Wait a moment for the sandbox to initialize
                     # sleep(5)
                     # Refresh sandbox state after starting

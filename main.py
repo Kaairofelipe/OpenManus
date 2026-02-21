@@ -2,7 +2,20 @@ import argparse
 import asyncio
 
 from app.agent.manus import Manus
+from app.config import config
 from app.logger import logger
+
+
+def _has_valid_llm_key() -> bool:
+    llm_cfg = config.llm.get("default")
+    api_key = (llm_cfg.api_key or "").strip() if llm_cfg else ""
+    invalid_values = {
+        "",
+        "YOUR_API_KEY",
+        "AZURE API KEY",
+        "your Jiekou.AI api key",
+    }
+    return api_key not in invalid_values and "YOUR_" not in api_key
 
 
 async def main():
@@ -12,6 +25,11 @@ async def main():
         "--prompt", type=str, required=False, help="Input prompt for the agent"
     )
     args = parser.parse_args()
+    if not _has_valid_llm_key():
+        logger.error(
+            "Invalid API key in config/config.toml. Update [llm].api_key before running OpenManus."
+        )
+        return
 
     # Create and initialize Manus agent
     agent = await Manus.create()
