@@ -202,6 +202,8 @@ Outputs:
     ) -> str:
         try:
             logger.info(f"📈 data_visualization with {json_path} in: {tool_type} ")
+            if ".." in json_path:
+                raise Exception("Invalid file path")
             with open(json_path, "r", encoding="utf-8") as file:
                 json_info = json.load(file)
             if tool_type == "visualization":
