@@ -16,5 +16,8 @@
     },
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "azureResourceGroups.enableChatStandIn": true,
+    "azureResourceGroups.duplicateSubscriptionMode": true,
+    "azureResourceGroups.showHiddenTypes": true
 }
